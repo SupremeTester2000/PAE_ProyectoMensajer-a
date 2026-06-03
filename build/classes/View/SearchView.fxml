@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Priority?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<VBox minHeight="460.0" minWidth="560.0" prefHeight="520.0" prefWidth="640.0" spacing="14.0" stylesheets="@chatconnect.css" styleClass="app-shell" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controllers.SearchController">
+    <padding>
+        <Insets bottom="22.0" left="22.0" right="22.0" top="22.0" />
+    </padding>
+
+    <children>
+        <VBox spacing="14.0" styleClass="panel-card">
+            <padding>
+                <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+            </padding>
+            <children>
+                <HBox alignment="CENTER_LEFT" spacing="12.0">
+                    <children>
+                        <Label alignment="CENTER" prefHeight="46.0" prefWidth="46.0" styleClass="avatar-large" text="🔎" />
+
+                        <VBox spacing="2.0">
+                            <children>
+                                <Label styleClass="section-title" text="Buscar usuarios">
+                                    <font>
+                                        <Font name="System Bold" size="20.0" />
+                                    </font>
+                                </Label>
+                                <Label styleClass="muted-label" text="Inicia una conversación privada" />
+                            </children>
+                        </VBox>
+
+                        <HBox HBox.hgrow="ALWAYS" />
+
+                        <Button onAction="#closeWindow" prefHeight="34.0" prefWidth="86.0" styleClass="secondary-button" text="Cerrar" />
+                    </children>
+                </HBox>
+
+                <HBox spacing="8.0">
+                    <children>
+                        <TextField fx:id="txtUserSearch" onAction="#searchUsers" promptText="Buscar por nombre o correo..." styleClass="search-field" HBox.hgrow="ALWAYS" />
+                        <Button onAction="#searchUsers" prefHeight="36.0" prefWidth="88.0" styleClass="primary-button" text="Buscar" />
+                        <Button onAction="#clearResults" prefHeight="36.0" prefWidth="88.0" styleClass="secondary-button" text="Limpiar" />
+                    </children>
+                </HBox>
+
+                <Separator opacity="0.35" />
+
+                <Label fx:id="lblStatus" styleClass="muted-label" text="Busca por nombre o correo." />
+
+                <ListView fx:id="userList" prefHeight="280.0" styleClass="plain-list">
+                    <VBox.vgrow>
+                        <Priority fx:constant="ALWAYS" />
+                    </VBox.vgrow>
+                </ListView>
+
+                <HBox alignment="CENTER_RIGHT">
+                    <children>
+                        <Button fx:id="btnCreateConversation" onAction="#createPrivateConversation" prefHeight="40.0" prefWidth="180.0" styleClass="primary-button" text="Crear conversación" />
+                    </children>
+                </HBox>
+            </children>
+        </VBox>
+    </children>
+</VBox>

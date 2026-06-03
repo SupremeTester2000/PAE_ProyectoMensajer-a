@@ -1,0 +1,199 @@
+.app-shell {
+    -fx-background-color: linear-gradient(to bottom right, #eef4ff, #f7fbff 55%, #ffffff);
+    -fx-font-family: "System";
+}
+
+.phone-screen {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 28;
+    -fx-border-color: #d8dee9;
+    -fx-border-radius: 28;
+    -fx-border-width: 1;
+    -fx-effect: dropshadow(gaussian, rgba(30, 41, 59, 0.16), 28, 0.18, 0, 10);
+}
+
+.desktop-shell {
+    -fx-background-color: #f3f6fb;
+    -fx-font-family: "System";
+}
+
+.sidebar {
+    -fx-background-color: #ffffff;
+    -fx-border-color: transparent #e5eaf2 transparent transparent;
+    -fx-border-width: 0 1 0 0;
+}
+
+.top-bar {
+    -fx-background-color: #ffffff;
+    -fx-border-color: transparent transparent #e7ebf1 transparent;
+    -fx-border-width: 0 0 1 0;
+}
+
+.chat-header {
+    -fx-background-color: #ffffff;
+    -fx-border-color: transparent transparent #e7ebf1 transparent;
+    -fx-border-width: 0 0 1 0;
+}
+
+.panel-card {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 20;
+    -fx-border-color: #e3e8ef;
+    -fx-border-radius: 20;
+    -fx-border-width: 1;
+    -fx-effect: dropshadow(gaussian, rgba(15, 23, 42, 0.12), 22, 0.12, 0, 8);
+}
+
+.brand-title {
+    -fx-text-fill: #111827;
+    -fx-font-weight: 800;
+}
+
+.section-title {
+    -fx-text-fill: #111827;
+    -fx-font-weight: 700;
+}
+
+.muted-label {
+    -fx-text-fill: #6b7280;
+}
+
+.tiny-label {
+    -fx-text-fill: #6b7280;
+    -fx-font-size: 11;
+    -fx-font-weight: 700;
+}
+
+.avatar-large {
+    -fx-background-color: linear-gradient(to bottom right, #dce9ff, #edf4ff);
+    -fx-background-radius: 999;
+    -fx-text-fill: #1d4ed8;
+    -fx-font-weight: 800;
+}
+
+.primary-button {
+    -fx-background-color: linear-gradient(to right, #2f7df6, #1764df);
+    -fx-background-radius: 10;
+    -fx-text-fill: white;
+    -fx-font-weight: 700;
+    -fx-cursor: hand;
+}
+
+.secondary-button {
+    -fx-background-color: #f1f5f9;
+    -fx-background-radius: 10;
+    -fx-border-color: #dde5ef;
+    -fx-border-radius: 10;
+    -fx-border-width: 1;
+    -fx-text-fill: #1f2937;
+    -fx-font-weight: 700;
+    -fx-cursor: hand;
+}
+
+.danger-button {
+    -fx-background-color: #ef4444;
+    -fx-background-radius: 10;
+    -fx-text-fill: white;
+    -fx-font-weight: 700;
+    -fx-cursor: hand;
+}
+
+.ghost-button {
+    -fx-background-color: #eef4ff;
+    -fx-background-radius: 12;
+    -fx-border-color: #d8e5ff;
+    -fx-border-radius: 12;
+    -fx-border-width: 1;
+    -fx-text-fill: #1d4ed8;
+    -fx-font-weight: 700;
+    -fx-cursor: hand;
+}
+
+.icon-button {
+    -fx-background-color: #eef4ff;
+    -fx-background-radius: 14;
+    -fx-text-fill: #1d4ed8;
+    -fx-font-weight: 800;
+    -fx-cursor: hand;
+}
+
+.quick-action-button {
+    -fx-background-color: transparent;
+    -fx-background-radius: 14;
+    -fx-border-color: transparent;
+    -fx-text-fill: #374151;
+    -fx-font-size: 12;
+    -fx-font-weight: 700;
+    -fx-cursor: hand;
+    -fx-padding: 8 10;
+}
+
+.quick-action-button:hover {
+    -fx-background-color: #f3f7ff;
+}
+
+.field {
+    -fx-background-color: #f8fafc;
+    -fx-background-radius: 10;
+    -fx-border-color: #dfe6ef;
+    -fx-border-radius: 10;
+    -fx-border-width: 1;
+    -fx-padding: 10 12;
+    -fx-font-size: 13;
+}
+
+.search-field {
+    -fx-background-color: #f5f7fb;
+    -fx-background-radius: 12;
+    -fx-border-color: #e1e7ef;
+    -fx-border-radius: 12;
+    -fx-border-width: 1;
+    -fx-padding: 9 12;
+    -fx-font-size: 12;
+}
+
+.conversation-list,
+.message-list,
+.plain-list {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-padding: 0;
+}
+
+.conversation-list .list-cell,
+.plain-list .list-cell {
+    -fx-background-color: transparent;
+    -fx-text-fill: #111827;
+    -fx-padding: 12 12;
+    -fx-border-color: transparent transparent #edf1f6 transparent;
+    -fx-border-width: 0 0 1 0;
+    -fx-font-size: 13;
+}
+
+.conversation-list .list-cell:selected,
+.plain-list .list-cell:selected {
+    -fx-background-color: #eaf2ff;
+    -fx-text-fill: #0f172a;
+}
+
+.message-list .list-cell {
+    -fx-background-color: transparent;
+    -fx-text-fill: #1f2937;
+    -fx-padding: 8 18;
+    -fx-font-size: 13;
+}
+
+.composer {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #e7ebf1 transparent transparent transparent;
+    -fx-border-width: 1 0 0 0;
+}
+
+.chat-canvas {
+    -fx-background-color: linear-gradient(to bottom, #f7fbff, #edf4fb);
+}
+
+.link {
+    -fx-text-fill: #1d64d8;
+    -fx-font-weight: 700;
+}

@@ -1,0 +1,59 @@
+<BorderPane xmlns:fx="http://javafx.com/fxml"
+            fx:controller="Controllers.GroupInfoController">
+
+    <top>
+        <HBox spacing="10">
+
+            <Button fx:id="btnBack"
+                    text="← Volver"
+                    onAction="#goBack"/>
+
+            <Label text="Información del Grupo"/>
+
+        </HBox>
+    </top>
+
+    <center>
+        <VBox spacing="15"
+              alignment="TOP_CENTER">
+
+            <Circle radius="50"/>
+
+            <Label fx:id="lblGroupName"
+                   text="Nombre Grupo"/>
+
+            <Label fx:id="lblMembersCount"
+                   text="0 miembros"/>
+
+            <HBox spacing="10">
+
+                <Button fx:id="btnCallGroup"
+                        text="Llamada"
+                        onAction="#groupCall"/>
+
+                <Button fx:id="btnVideoGroup"
+                        text="Video"
+                        onAction="#groupVideoCall"/>
+
+                <Button fx:id="btnAddMember"
+                        text="Agregar"
+                        onAction="#addMember"/>
+
+            </HBox>
+
+            <Separator/>
+
+            <Label text="Descripción"/>
+
+            <TextArea fx:id="txtDescription"
+                      editable="false"/>
+
+            <Label text="Participantes"/>
+
+            <ListView fx:id="memberListView"/>
+
+        </VBox>
+
+    </center>
+
+</BorderPane>

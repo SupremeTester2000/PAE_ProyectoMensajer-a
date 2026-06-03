@@ -1,0 +1,53 @@
+<BorderPane xmlns:fx="http://javafx.com/fxml"
+            fx:controller="Controllers.StatisticsController">
+
+    <top>
+
+        <HBox spacing="10">
+
+            <Button fx:id="btnBack"
+                    text="← Volver"
+                    onAction="#goBack"/>
+
+            <Label text="Estadísticas"/>
+
+        </HBox>
+
+    </top>
+
+    <center>
+
+        <VBox spacing="20">
+
+            <ChoiceBox fx:id="cbPeriod"/>
+
+            <GridPane hgap="15"
+                      vgap="15">
+
+                <Label text="Mensajes enviados"/>
+                <Label fx:id="lblSentMessages"/>
+
+                <Label text="Mensajes recibidos"/>
+                <Label fx:id="lblReceivedMessages"/>
+
+                <Label text="Archivos compartidos"/>
+                <Label fx:id="lblSharedFiles"/>
+
+                <Label text="Tiempo de uso"/>
+                <Label fx:id="lblUsageTime"/>
+
+            </GridPane>
+
+            <Label text="Actividad"/>
+
+            <LineChart fx:id="activityChart"/>
+
+            <Label text="Chats más activos"/>
+
+            <TableView fx:id="activeChatsTable"/>
+
+        </VBox>
+
+    </center>
+
+</BorderPane>

@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Priority?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="620.0" minWidth="1000.0" prefHeight="760.0" prefWidth="1180.0" stylesheets="@chatconnect.css" styleClass="desktop-shell" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controllers.DashboardController">
+   <top>
+      <HBox alignment="CENTER_LEFT" spacing="12.0" styleClass="top-bar" BorderPane.alignment="CENTER">
+         <padding>
+            <Insets bottom="12.0" left="18.0" right="18.0" top="12.0" />
+         </padding>
+         <children>
+            <Label styleClass="brand-title" text="ChatConnect">
+               <font>
+                  <Font name="System Bold" size="18.0" />
+               </font>
+            </Label>
+
+            <Separator orientation="VERTICAL" opacity="0.35" />
+
+            <Label fx:id="lblUsername" styleClass="muted-label" text="Usuario" />
+
+            <HBox HBox.hgrow="ALWAYS" />
+
+            <Button onAction="#logout" prefHeight="34.0" prefWidth="86.0" styleClass="danger-button" text="Salir" />
+         </children>
+      </HBox>
+   </top>
+
+   <left>
+      <VBox minWidth="330.0" prefWidth="350.0" spacing="14.0" styleClass="sidebar" BorderPane.alignment="CENTER">
+         <padding>
+            <Insets bottom="16.0" left="16.0" right="16.0" top="16.0" />
+         </padding>
+         <children>
+            <VBox spacing="6.0">
+               <Label styleClass="section-title" text="Chats">
+                  <font>
+                     <Font name="System Bold" size="20.0" />
+                  </font>
+               </Label>
+               <TextField fx:id="txtSearch" onAction="#searchConversations" promptText="Buscar conversaciones..." styleClass="search-field" />
+            </VBox>
+
+            <HBox alignment="CENTER" spacing="10.0">
+               <children>
+                  <Button onAction="#openSearch" prefHeight="70.0" maxWidth="Infinity" styleClass="quick-action-button" text="+&#10;Nuevo" textAlignment="CENTER" HBox.hgrow="ALWAYS" />
+                  <Button onAction="#openCreateGroup" prefHeight="70.0" maxWidth="Infinity" styleClass="quick-action-button" text="👥&#10;Grupos" textAlignment="CENTER" HBox.hgrow="ALWAYS" />
+                  <Button onAction="#openProfile" prefHeight="70.0" maxWidth="Infinity" styleClass="quick-action-button" text="☰&#10;Contactos" textAlignment="CENTER" HBox.hgrow="ALWAYS" />
+               </children>
+            </HBox>
+
+            <Separator opacity="0.35" />
+
+            <Label styleClass="tiny-label" text="CHATS RECIENTES" />
+
+            <ListView fx:id="conversationList" prefHeight="420.0" prefWidth="320.0" styleClass="conversation-list">
+               <VBox.vgrow>
+                  <Priority fx:constant="ALWAYS" />
+               </VBox.vgrow>
+            </ListView>
+         </children>
+      </VBox>
+   </left>
+
+   <center>
+      <VBox alignment="CENTER" spacing="20.0" style="-fx-background-color: #f7fbff;" BorderPane.alignment="CENTER">
+         <padding>
+            <Insets bottom="34.0" left="34.0" right="34.0" top="34.0" />
+         </padding>
+         <children>
+            <VBox alignment="CENTER" maxWidth="430.0" spacing="18.0" styleClass="panel-card">
+               <padding>
+                  <Insets bottom="36.0" left="36.0" right="36.0" top="36.0" />
+               </padding>
+               <children>
+                  <Label alignment="CENTER" prefHeight="86.0" prefWidth="86.0" styleClass="avatar-large" text="💬">
+                     <font>
+                        <Font size="34.0" />
+                     </font>
+                  </Label>
+
+                  <Label styleClass="brand-title" text="Bienvenido a ChatConnect" textAlignment="CENTER">
+                     <font>
+                        <Font name="System Bold" size="24.0" />
+                     </font>
+                  </Label>
+
+                  <Label maxWidth="320.0" styleClass="muted-label" text="Selecciona una conversación, inicia un chat privado o crea un grupo para comenzar." textAlignment="CENTER" wrapText="true">
+                     <font>
+                        <Font size="14.0" />
+                     </font>
+                  </Label>
+               </children>
+            </VBox>
+         </children>
+      </VBox>
+   </center>
+</BorderPane>

@@ -1,0 +1,57 @@
+<BorderPane xmlns:fx="http://javafx.com/fxml"
+            fx:controller="Controllers.PrivacyController">
+
+    <top>
+        <HBox spacing="10">
+
+            <Button fx:id="btnBack"
+                    text="← Volver"
+                    onAction="#goBack"/>
+
+            <Label text="Privacidad"/>
+
+        </HBox>
+    </top>
+
+    <center>
+
+        <VBox spacing="15">
+
+            <Label text="Última vez y en línea"/>
+
+            <ChoiceBox fx:id="cbLastSeen"/>
+
+            <Label text="Foto de perfil"/>
+
+            <ChoiceBox fx:id="cbPhotoVisibility"/>
+
+            <Label text="Información"/>
+
+            <ChoiceBox fx:id="cbInfoVisibility"/>
+
+            <Label text="Estados"/>
+
+            <ChoiceBox fx:id="cbStatusVisibility"/>
+
+            <Separator/>
+
+            <CheckBox fx:id="chkReadReceipts"
+                      text="Confirmaciones de lectura"/>
+
+            <Button fx:id="btnBlockedUsers"
+                    text="Usuarios bloqueados"
+                    onAction="#showBlockedUsers"/>
+
+            <Button fx:id="btnTwoFactor"
+                    text="Autenticación en dos pasos"
+                    onAction="#configureTwoFactor"/>
+
+            <Button fx:id="btnSavePrivacy"
+                    text="Guardar cambios"
+                    onAction="#savePrivacySettings"/>
+
+        </VBox>
+
+    </center>
+
+</BorderPane>
