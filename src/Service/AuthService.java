@@ -35,6 +35,13 @@ public class AuthService {
             
             if (PasswordUtils.verifyPassword(password, user.getPassword())) {
                 sessionManager.setCurrentUser(user);
+                // Marcar usuario como conectado en la base de datos
+                try {
+                    userDAO.updateUserConnected(user.getId(), true);
+                    user.setConnected(true);
+                } catch (SQLException ex) {
+                    System.err.println("[AuthService] No se pudo actualizar estado conectado: " + ex.getMessage());
+                }
                 return true;
             }
             
@@ -87,6 +94,16 @@ public class AuthService {
     }
 
     public void logout() {
+        // Marcar usuario como desconectado en la base de datos
+        Util.SessionManager sm = sessionManager;
+        Model.User u = sm.getCurrentUser();
+        if (u != null) {
+            try {
+                userDAO.updateUserConnected(u.getId(), false);
+            } catch (SQLException ex) {
+                System.err.println("[AuthService] No se pudo actualizar estado desconectado: " + ex.getMessage());
+            }
+        }
         sessionManager.clearSession();
     }
 

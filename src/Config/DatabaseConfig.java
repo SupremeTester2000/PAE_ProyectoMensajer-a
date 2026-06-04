@@ -6,22 +6,13 @@ import java.sql.SQLException;
 
 public class DatabaseConfig {
 
-    private static final String url = "jdbc:postgresql://localhost:5432/chatconnect";
+    private static final String url = "jdbc:postgresql://localhost:5433/chatconnect";
     private static final String user = "turkey";
     private static final String password = "kippycit0!";
 
     private static DatabaseConfig instance;
-    private Connection connection;
 
-    private DatabaseConfig() {
-        try {
-            connection = DriverManager.getConnection(url, user, password);
-            System.out.println("Conexión a PostgreSQL establecida.");
-        } catch (SQLException e) {
-            System.err.println("Error al conectar con PostgreSQL.");
-            e.printStackTrace();
-        }
-    }
+    private DatabaseConfig() {}
 
     public static synchronized DatabaseConfig getInstance() {
         if (instance == null) {
@@ -30,26 +21,21 @@ public class DatabaseConfig {
         return instance;
     }
 
+    /**
+     * Cada llamada retorna una conexion nueva e independiente.
+     * Los DAOs deben cerrarla en un try-with-resources.
+     * Esto evita conflictos entre hilos que compartian una sola conexion.
+     */
     public Connection getConnection() {
-
         try {
-            if (connection == null || connection.isClosed()) {
-                connection = DriverManager.getConnection(url, user, password);
-            }
+            return DriverManager.getConnection(url, user, password);
         } catch (SQLException e) {
+            System.err.println("[DatabaseConfig] Error al conectar: " + e.getMessage());
             e.printStackTrace();
-        }
-        return connection;
-    }
-
-    public void closeConnection() {
-        try {
-            if (connection != null && !connection.isClosed()) {
-                connection.close();
-                System.out.println("Conexión cerrada.");
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
+            return null;
         }
     }
+
+    /** Conservado por compatibilidad. */
+    public void closeConnection() {}
 }

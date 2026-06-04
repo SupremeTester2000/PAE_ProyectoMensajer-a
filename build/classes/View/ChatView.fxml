@@ -3,7 +3,7 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
-<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.Separator?>
 <?import javafx.scene.control.TextArea?>
 <?import javafx.scene.layout.BorderPane?>
@@ -20,18 +20,15 @@
          </padding>
          <children>
             <Button onAction="#returnToDashboard" prefHeight="36.0" prefWidth="92.0" styleClass="secondary-button" text="&lt; Volver" />
-
             <Separator orientation="VERTICAL" opacity="0.35" />
-
             <Label alignment="CENTER" prefHeight="44.0" prefWidth="44.0" styleClass="avatar-large" text="AB">
                <font>
                   <Font name="System Bold" size="15.0" />
                </font>
             </Label>
-
             <VBox spacing="2.0">
                <children>
-                  <Label fx:id="lblConversationName" styleClass="section-title" text="Conversación">
+                  <Label fx:id="lblConversationName" styleClass="section-title" text="Conversacion">
                      <font>
                         <Font name="System Bold" size="16.0" />
                      </font>
@@ -39,9 +36,7 @@
                   <Label styleClass="muted-label" text="Mensajes" />
                </children>
             </VBox>
-
             <HBox HBox.hgrow="ALWAYS" />
-
             <Button fx:id="btnContactInfo" onAction="#openContactInfo" prefHeight="36.0" prefWidth="120.0" styleClass="ghost-button" text="Info contacto" visible="false" />
             <Button fx:id="btnGroupInfo" onAction="#openGroupInfo" prefHeight="36.0" prefWidth="110.0" styleClass="ghost-button" text="Info grupo" visible="false" />
          </children>
@@ -51,11 +46,18 @@
    <center>
       <VBox spacing="0.0" styleClass="chat-canvas" BorderPane.alignment="CENTER">
          <children>
-            <ListView fx:id="messageList" prefHeight="420.0" prefWidth="900.0" styleClass="message-list">
+            <ScrollPane fx:id="messageScrollPane" fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED" styleClass="message-list">
                <VBox.vgrow>
                   <Priority fx:constant="ALWAYS" />
                </VBox.vgrow>
-            </ListView>
+               <content>
+                  <VBox fx:id="messageContainer" spacing="8.0">
+                     <padding>
+                        <Insets bottom="12.0" left="12.0" right="12.0" top="12.0" />
+                     </padding>
+                  </VBox>
+               </content>
+            </ScrollPane>
          </children>
       </VBox>
    </center>
@@ -67,11 +69,10 @@
          </padding>
          <children>
             <TextArea fx:id="txtMessageInput" prefRowCount="2" promptText="Escribe un mensaje..." styleClass="field" wrapText="true" />
-
             <HBox alignment="CENTER_RIGHT" spacing="10.0">
                <children>
-                  <Button fx:id="btnAttach" onAction="#attachFile" prefHeight="38.0" prefWidth="38.0" styleClass="secondary-button" text="📎" />
-                  <Button onAction="#clearAttachments" prefHeight="38.0" prefWidth="38.0" styleClass="secondary-button" text="✕" />
+                  <Button fx:id="btnAttach" onAction="#attachFile" prefHeight="38.0" prefWidth="38.0" styleClass="secondary-button" text="&#x1F4CE;" />
+                  <Button onAction="#clearAttachments" prefHeight="38.0" prefWidth="38.0" styleClass="secondary-button" text="X" />
                   <Button fx:id="btnDelete" onAction="#deleteMessage" prefHeight="38.0" prefWidth="110.0" styleClass="danger-button" text="Eliminar" visible="false" />
                   <Button onAction="#sendMessage" prefHeight="40.0" prefWidth="120.0" styleClass="primary-button" text="Enviar" />
                </children>

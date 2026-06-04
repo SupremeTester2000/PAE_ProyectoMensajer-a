@@ -20,6 +20,9 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public class SearchController {
 
@@ -43,6 +46,7 @@ public class SearchController {
     private User currentUser;
     private DashboardController dashboardController;
     private Stage stage;
+    private ScheduledExecutorService presenceRefreshExecutor;
 
     public SearchController() {
         this.userService = new UserService();
@@ -71,6 +75,7 @@ public class SearchController {
         });
 
         loadAllUsers();
+        startPresenceRefresh();
     }
 
     @FXML
@@ -216,6 +221,40 @@ public class SearchController {
 
     public void setStage(Stage stage) {
         this.stage = stage;
+        // Detener el refresco de presencia cuando se cierra la ventana
+        if (stage != null) {
+            stage.setOnCloseRequest(event -> stopPresenceRefresh());
+        }
+    }
+
+    // --- Refresco de presencia ---
+
+    private void startPresenceRefresh() {
+        stopPresenceRefresh();
+        presenceRefreshExecutor = Executors.newSingleThreadScheduledExecutor(r -> {
+            Thread t = new Thread(r, "presence-refresh");
+            t.setDaemon(true);
+            return t;
+        });
+        presenceRefreshExecutor.scheduleAtFixedRate(() -> {
+            try {
+                if (currentUser == null) return;
+                List<User> updated = userService.getAvailableUsers(currentUser.getId());
+                Platform.runLater(() -> {
+                    currentUsers.clear();
+                    currentUsers.addAll(updated);
+                    updateUserResults();
+                });
+            } catch (Exception e) {
+                System.err.println("[SearchController] Error refrescando presencia: " + e.getMessage());
+            }
+        }, 3, 3, TimeUnit.SECONDS);
+    }
+
+    private void stopPresenceRefresh() {
+        if (presenceRefreshExecutor != null && !presenceRefreshExecutor.isShutdown()) {
+            presenceRefreshExecutor.shutdownNow();
+        }
     }
 
     private void updateUserResults() {

@@ -3,6 +3,7 @@ package Controllers;
 import Model.Conversation;
 import Model.User;
 import Service.ConversationService;
+import Service.AuthService;
 import Service.UserService;
 import Util.SessionManager;
 import javafx.collections.FXCollections;
@@ -429,9 +430,8 @@ public class DashboardController {
 
         try {
 
-            SessionManager
-                    .getInstance()
-                    .clearSession();
+            // Marcar usuario como desconectado en BD antes de limpiar sesión
+            new AuthService().logout();
 
             FXMLLoader loader
                     = new FXMLLoader(
