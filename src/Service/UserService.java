@@ -2,6 +2,7 @@ package Service;
 
 import DAO.UserDAO;
 import Model.User;
+import Network.SocketClientManager;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -9,9 +10,11 @@ import java.util.List;
 public class UserService {
 
     private final UserDAO userDAO;
+    private final SocketClientManager socketClientManager;
 
     public UserService() {
         this.userDAO = new UserDAO();
+        this.socketClientManager = SocketClientManager.getInstance();
     }
 
     public User getUser(int id) {
@@ -50,23 +53,26 @@ public class UserService {
         }
     }
     
-    public User getOtherParticipant(
-        int conversationId,
-        int currentUserId) {
-
-    try {
-
-        return userDAO.getOtherParticipant(
-                conversationId,
-                currentUserId);
-
-    } catch (SQLException e) {
-
-        throw new RuntimeException(
-                "Error al obtener participante: "
-                + e.getMessage(),
-                e);
+    public User getOtherParticipant(int conversationId, int currentUserId) {
+        try {
+            return userDAO.getOtherParticipant(conversationId, currentUserId);
+        } catch (SQLException e) {
+            throw new RuntimeException("Error al obtener participante: " + e.getMessage(), e);
+        }
     }
-}
+
+    public boolean updateUserConnected(int userId, boolean connected) {
+        try {
+            return userDAO.updateUserConnected(userId, connected);
+        } catch (SQLException e) {
+            throw new RuntimeException("Error al actualizar estado de conexión: " + e.getMessage(), e);
+        }
+    }
+
+    public boolean isUserOnline(int userId) {
+        return socketClientManager != null && 
+               socketClientManager.isConnected() && 
+               socketClientManager.getCurrentUserId() == userId;
+    }
 }
 

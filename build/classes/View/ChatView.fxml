@@ -70,6 +70,8 @@
 
             <HBox alignment="CENTER_RIGHT" spacing="10.0">
                <children>
+                  <Button fx:id="btnAttach" onAction="#attachFile" prefHeight="38.0" prefWidth="38.0" styleClass="secondary-button" text="📎" />
+                  <Button onAction="#clearAttachments" prefHeight="38.0" prefWidth="38.0" styleClass="secondary-button" text="✕" />
                   <Button fx:id="btnDelete" onAction="#deleteMessage" prefHeight="38.0" prefWidth="110.0" styleClass="danger-button" text="Eliminar" visible="false" />
                   <Button onAction="#sendMessage" prefHeight="40.0" prefWidth="120.0" styleClass="primary-button" text="Enviar" />
                </children>

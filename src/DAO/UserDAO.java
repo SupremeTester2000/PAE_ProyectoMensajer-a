@@ -197,6 +197,19 @@ public class UserDAO {
         return false;
     }
 
+    public boolean updateUserConnected(int userId, boolean connected) throws SQLException {
+        String sql = "UPDATE users SET connected = ? WHERE id = ?";
+        try (Connection conn = DatabaseConfig.getInstance().getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setBoolean(1, connected);
+            pstmt.setInt(2, userId);
+
+            int affectedRows = pstmt.executeUpdate();
+            return affectedRows > 0;
+        }
+    }
+
     public boolean delete(int id) {
         return false;
     }

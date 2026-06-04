@@ -1,15 +1,21 @@
 package Controllers;
 
+import Model.Attachment;
 import Model.Conversation;
 import Model.Message;
 import Model.User;
 
+import Network.NetworkMessage;
+import Network.SocketClientManager;
+import Service.AttachmentService;
 import Service.MessageService;
 import Service.UserService;
 
 import Util.SessionManager;
 import Util.TaskManager;
+import java.awt.Desktop;
 
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.control.Alert;
@@ -17,7 +23,10 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextArea;
+import javafx.stage.FileChooser;
+import java.io.File;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -25,6 +34,8 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 import javafx.fxml.FXML;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import javafx.concurrent.Task;
 
 public class ChatController {
@@ -47,8 +58,13 @@ public class ChatController {
     @FXML
     private Button btnDelete;
 
+    @FXML
+    private Button btnAttach;
+
     private MessageService messageService;
     private UserService userService;
+    private AttachmentService attachmentService;
+    private SocketClientManager socketClientManager;
     private Conversation conversation;
     private DashboardController dashboardController;
     private Stage stage;
@@ -56,29 +72,51 @@ public class ChatController {
     private User contactUser;
     private ObservableList<String> messageTexts;
     private List<Message> messages;
+    private List<File> selectedAttachments;
     private DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
     private DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+    private final Map<Integer, Attachment> attachmentMap = new HashMap<>();
+    private final Map<Integer, Message> displayedMessages = new HashMap<>();
 
-    /**
-     * Metodo de inicializacion llamado automaticamente despues de cargar el
-     * FXML.
-     */
     @FXML
     public void initialize() {
         this.messageService = new MessageService();
         this.userService = new UserService();
+        this.attachmentService = new AttachmentService();
+        this.socketClientManager = SocketClientManager.getInstance();
         this.currentUser = SessionManager.getInstance().getCurrentUser();
         this.messageTexts = FXCollections.observableArrayList();
+        this.selectedAttachments = new ArrayList<>();
 
         if (messageList != null) {
             messageList.setItems(messageTexts);
+            messageList.setOnMouseClicked(event -> {
+
+                if (event.getClickCount() == 2) {
+
+                    int selectedIndex
+                            = messageList.getSelectionModel()
+                                    .getSelectedIndex();
+
+                    Attachment attachment
+                            = attachmentMap.get(
+                                    selectedIndex);
+
+                    if (attachment != null) {
+
+                        openAttachment(
+                                attachment);
+                    }
+                }
+            });
         }
+
+        socketClientManager.addMessageListener(this::onNetworkMessageReceived);
     }
 
     public void setConversation(Conversation conversation) {
         this.conversation = conversation;
 
-        // Mostrar nombre de la conversacion
         if (lblConversationName != null && conversation != null) {
             String displayName = conversation.getGroupName();
             if (displayName == null || displayName.isEmpty()) {
@@ -104,27 +142,21 @@ public class ChatController {
                 }
             }
         }
+
         if ("PRIVATE".equals(conversation.getType())) {
-
             try {
+                contactUser = userService.getOtherParticipant(
+                        conversation.getId(),
+                        currentUser.getId());
 
-                contactUser
-                        = userService.getOtherParticipant(
-                                conversation.getId(),
-                                currentUser.getId());
-
-                if (contactUser != null
-                        && lblConversationName != null) {
-
-                    lblConversationName.setText(
-                            contactUser.getName());
+                if (contactUser != null && lblConversationName != null) {
+                    lblConversationName.setText(contactUser.getName());
                 }
-
             } catch (Exception e) {
-
                 e.printStackTrace();
             }
         }
+
         loadMessages();
     }
 
@@ -132,17 +164,13 @@ public class ChatController {
         this.dashboardController = dashboardController;
     }
 
-
     public void setStage(Stage stage) {
         this.stage = stage;
     }
 
     @FXML
     private void loadMessages() {
-
-        if (conversation == null
-                || currentUser == null) {
-
+        if (conversation == null || currentUser == null) {
             return;
         }
 
@@ -154,216 +182,213 @@ public class ChatController {
         };
 
         task.setOnSucceeded(event -> {
-
             messages = task.getValue();
-
             updateMessageList(messages);
         });
 
         task.setOnFailed(event -> {
-
-            Throwable error
-                    = task.getException();
-
-            showError(
-                    "Error al cargar mensajes: "
-                    + error.getMessage());
+            Throwable error = task.getException();
+            showError("Error al cargar mensajes: " + error.getMessage());
         });
 
         TaskManager.getExecutor().submit(task);
     }
 
-    private void updateMessageList(
-            List<Message> messagesList) {
-
+    private void updateMessageList(List<Message> messagesList) {
         messageTexts.clear();
+        attachmentMap.clear();
+        displayedMessages.clear();
+        String displayText;
 
         for (Message msg : messagesList) {
-
             String senderName;
 
-            if (msg.getSenderId()
-                    == currentUser.getId()) {
-
+            if (msg.getSenderId() == currentUser.getId()) {
                 senderName = "Tú";
+            } else {
+                senderName = (contactUser != null) ? contactUser.getName() : "Usuario";
+            }
+
+            String time = msg.getTimestamp() != null
+                    ? msg.getTimestamp().format(timeFormatter)
+                    : "--:--";
+
+            List<Attachment> attachments
+                    = attachmentService.getAttachmentsByMessage(
+                            msg.getId());
+
+            if (!attachments.isEmpty()) {
+
+                Attachment attachment
+                        = attachments.get(0);
+
+                attachmentMap.put(
+                        messageTexts.size(),
+                        attachment);
+
+                displayedMessages.put(
+                        messageTexts.size(),
+                        msg);
+
+                displayText = String.format(
+                        "[%s] %s: 📎 %s",
+                        time,
+                        senderName,
+                        attachment.getFileName());
 
             } else {
 
-                senderName
-                        = (contactUser != null)
-                                ? contactUser.getName()
-                                : "Usuario";
+                displayedMessages.put(
+                        messageTexts.size(),
+                        msg);
+
+                displayText = String.format(
+                        "[%s] %s: %s",
+                        time,
+                        senderName,
+                        msg.getContent());
             }
 
-            String time
-                    = msg.getTimestamp() != null
-                    ? msg.getTimestamp()
-                            .format(timeFormatter)
-                    : "--:--";
-
-            String displayText
-                    = String.format(
-                            "[%s] %s: %s",
-                            time,
-                            senderName,
-                            msg.getContent());
+            messageTexts.add(displayText);
 
             messageTexts.add(displayText);
         }
     }
 
-    @FXML
-    private void sendMessage() {
-
-        if (conversation == null || currentUser == null) {
-
-            showError(
-                    "No hay conversacion o usuario seleccionado.");
-
+    private void onNetworkMessageReceived(NetworkMessage networkMessage) {
+        if (conversation == null || networkMessage.getConversationId() != conversation.getId()) {
             return;
         }
 
-        String messageContent
-                = txtMessageInput != null
-                        ? txtMessageInput.getText()
-                        : "";
+        Platform.runLater(() -> {
+            try {
+                String senderName;
 
-        if (messageContent == null
-                || messageContent.trim().isEmpty()) {
+                if (networkMessage.getSenderId() == currentUser.getId()) {
+                    senderName = "Tú";
+                } else {
+                    senderName = (networkMessage.getSenderName() != null)
+                            ? networkMessage.getSenderName()
+                            : "Usuario";
+                }
 
-            showError(
-                    "El mensaje no puede estar vacio.");
+                String time = networkMessage.getTimestamp() != null
+                        ? networkMessage.getTimestamp().substring(11, 16)
+                        : "--:--";
 
+                String displayText = String.format(
+                        "[%s] %s: %s",
+                        time,
+                        senderName,
+                        networkMessage.getContent());
+
+                messageTexts.add(displayText);
+
+                if (messageList != null && messageTexts.size() > 0) {
+                    messageList.scrollTo(messageTexts.size() - 1);
+                }
+
+            } catch (Exception e) {
+                System.err.println("[ChatController] Error procesando mensaje recibido: " + e.getMessage());
+            }
+        });
+    }
+
+    @FXML
+    private void sendMessage() {
+        if (conversation == null || currentUser == null) {
+            showError("No hay conversacion o usuario seleccionado.");
+            return;
+        }
+
+        String messageContent = txtMessageInput != null ? txtMessageInput.getText() : "";
+
+        if ((messageContent == null || messageContent.trim().isEmpty()) && selectedAttachments.isEmpty()) {
+            showError("El mensaje no puede estar vacio y debe tener contenido o adjuntos.");
             return;
         }
 
         Message message = new Message();
+        message.setConversationId(conversation.getId());
+        message.setSenderId(currentUser.getId());
+        message.setContent(messageContent.trim().isEmpty() ? "[Adjuntos]" : messageContent);
+        message.setStatus("SENT");
 
-        message.setConversationId(
-                conversation.getId());
-
-        message.setSenderId(
-                currentUser.getId());
-
-        message.setContent(
-                messageContent);
-
-        message.setStatus(
-                "SENT");
-
-        Task<Boolean> task
-                = new Task<>() {
-
+        Task<Boolean> task = new Task<>() {
             @Override
-            protected Boolean call()
-                    throws Exception {
+            protected Boolean call() throws Exception {
+                System.out.println("Enviando mensaje desde: " + Thread.currentThread().getName());
 
-                System.out.println(
-                        "Enviando mensaje desde: "
-                        + Thread.currentThread()
-                                .getName());
+                boolean messageSent = messageService.sendMessage(message);
 
-                return messageService
-                        .sendMessage(message);
+                if (messageSent && !selectedAttachments.isEmpty() && message.getId() > 0) {
+                    for (File attachmentFile : selectedAttachments) {
+                        try {
+                            attachmentService.saveAttachment(attachmentFile, message.getId());
+                        } catch (Exception e) {
+                            System.err.println("Error al guardar adjunto: " + e.getMessage());
+                        }
+                    }
+                    selectedAttachments.clear();
+                }
+
+                return messageSent;
             }
         };
 
         task.setOnSucceeded(event -> {
-
-            boolean success
-                    = task.getValue();
+            boolean success = task.getValue();
 
             if (success) {
-
                 if (txtMessageInput != null) {
-
                     txtMessageInput.clear();
                 }
-
-                loadMessages();
-
-                if (messageList != null
-                        && messageTexts.size() > 0) {
-
-                    messageList.scrollTo(
-                            messageTexts.size() - 1);
-                }
-
             } else {
-
-                showError(
-                        "No se pudo enviar el mensaje.");
+                showError("No se pudo enviar el mensaje.");
             }
         });
 
         task.setOnFailed(event -> {
-
-            Throwable error
-                    = task.getException();
-
-            showError(
-                    "Error al enviar mensaje: "
-                    + error.getMessage());
-
+            Throwable error = task.getException();
+            showError("Error al enviar mensaje: " + error.getMessage());
             error.printStackTrace();
         });
 
-        TaskManager
-                .getExecutor()
-                .submit(task);
+        TaskManager.getExecutor().submit(task);
     }
 
     @FXML
     private void openContactInfo() {
-
         try {
-
             if (conversation == null) {
-
                 showError("No hay conversación seleccionada.");
                 return;
             }
 
-            User contact
-                    = userService.getOtherParticipant(
-                            conversation.getId(),
-                            currentUser.getId());
+            User contact = userService.getOtherParticipant(
+                    conversation.getId(),
+                    currentUser.getId());
 
             if (contact == null) {
-
-                showError(
-                        "No se pudo obtener la información del contacto.");
+                showError("No se pudo obtener la información del contacto.");
                 return;
             }
 
-            FXMLLoader loader
-                    = new FXMLLoader(
-                            getClass().getResource(
-                                    "/View/ContactInfoView.fxml"));
+            FXMLLoader loader = new FXMLLoader(
+                    getClass().getResource("/View/ContactInfoView.fxml"));
 
             Parent root = loader.load();
 
-            ContactInfoController controller
-                    = loader.getController();
-
+            ContactInfoController controller = loader.getController();
             controller.setContact(contact);
 
             Stage contactStage = new Stage();
-
-            contactStage.setTitle(
-                    "Información de Contacto");
-
-            contactStage.setScene(
-                    new Scene(root));
-
+            contactStage.setTitle("Información de Contacto");
+            contactStage.setScene(new Scene(root));
             contactStage.show();
 
         } catch (Exception e) {
-
-            showError(
-                    "Error al abrir contacto: "
-                    + e.getMessage());
-
+            showError("Error al abrir contacto: " + e.getMessage());
             e.printStackTrace();
         }
     }
@@ -374,37 +399,88 @@ public class ChatController {
     }
 
     @FXML
+    private void attachFile() {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Seleccionar archivos para adjuntar");
+        fileChooser.getExtensionFilters().addAll(
+                new FileChooser.ExtensionFilter("Todos los archivos", "*.*"),
+                new FileChooser.ExtensionFilter("Imágenes", "*.jpg", "*.jpeg", "*.png", "*.gif"),
+                new FileChooser.ExtensionFilter("Documentos", "*.pdf", "*.doc", "*.docx", "*.txt"),
+                new FileChooser.ExtensionFilter("Hojas de cálculo", "*.xls", "*.xlsx"),
+                new FileChooser.ExtensionFilter("Presentaciones", "*.ppt", "*.pptx"),
+                new FileChooser.ExtensionFilter("Archivos comprimidos", "*.zip", "*.rar"),
+                new FileChooser.ExtensionFilter("Multimedia", "*.mp3", "*.mp4", "*.avi", "*.mov")
+        );
+
+        Stage currentStage = stage != null ? stage : (Stage) messageList.getScene().getWindow();
+        List<File> selectedFiles = fileChooser.showOpenMultipleDialog(currentStage);
+
+        if (selectedFiles != null && !selectedFiles.isEmpty()) {
+            selectedAttachments.addAll(selectedFiles);
+            StringBuilder fileNames = new StringBuilder("Archivos adjuntos: ");
+            for (File file : selectedFiles) {
+                fileNames.append(file.getName()).append(", ");
+            }
+            showInfo("Archivos seleccionados", fileNames.toString());
+        }
+    }
+
+    private void openAttachment(
+            Attachment attachment) {
+
+        try {
+
+            File file
+                    = new File(
+                            attachment.getFilePath());
+
+            if (!file.exists()) {
+
+                showError(
+                        "No se encontró el archivo.");
+
+                return;
+            }
+
+            Desktop.getDesktop()
+                    .open(file);
+
+        } catch (Exception e) {
+
+            showError(
+                    "Error al abrir archivo: "
+                    + e.getMessage());
+        }
+    }
+
+    @FXML
+    private void clearAttachments() {
+        selectedAttachments.clear();
+        showInfo("Adjuntos", "Se han limpiado los archivos adjuntos.");
+    }
+
+    @FXML
     private void deleteMessage() {
         showInfo("Eliminar", "Funcionalidad de eliminar mensaje - Implementacion futura");
     }
 
     @FXML
     private void returnToDashboard() {
-
         try {
-
             FXMLLoader loader = new FXMLLoader(
                     getClass().getResource("/View/DashboardView.fxml"));
 
             Parent root = loader.load();
 
-            Stage currentStage
-                    = (Stage) messageList.getScene().getWindow();
-
+            Stage currentStage = (Stage) messageList.getScene().getWindow();
             Scene scene = new Scene(root);
 
             currentStage.setScene(scene);
-
             currentStage.setTitle("ChatConnect - Dashboard");
-
             currentStage.show();
 
         } catch (IOException e) {
-
-            showError(
-                    "Error al volver al Dashboard: "
-                    + e.getMessage());
-
+            showError("Error al volver al Dashboard: " + e.getMessage());
             e.printStackTrace();
         }
     }

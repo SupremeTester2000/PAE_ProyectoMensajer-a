@@ -2,13 +2,17 @@ package Controllers;
 
 import Model.Conversation;
 import Model.User;
+import Network.SocketClientManager;
 import Service.ConversationService;
 import Service.UserService;
 import Util.SessionManager;
+import Util.TaskManager;
 import java.util.ArrayList;
 import java.util.List;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
@@ -33,6 +37,7 @@ public class SearchController {
 
     private final UserService userService;
     private final ConversationService conversationService;
+    private final SocketClientManager socketClientManager;
     private final ObservableList<String> userResults;
     private final List<User> currentUsers;
     private User currentUser;
@@ -42,6 +47,7 @@ public class SearchController {
     public SearchController() {
         this.userService = new UserService();
         this.conversationService = new ConversationService();
+        this.socketClientManager = SocketClientManager.getInstance();
         this.userResults = FXCollections.observableArrayList();
         this.currentUsers = new ArrayList<>();
     }
@@ -59,7 +65,44 @@ public class SearchController {
             });
         }
 
-        setStatus("Busca por nombre o correo.");
+        // Registrar listener para cambios de estado de conexión
+        socketClientManager.addStatusListener(status -> {
+            Platform.runLater(this::refreshUserStatus);
+        });
+
+        loadAllUsers();
+    }
+
+    @FXML
+    private void loadAllUsers() {
+        if (currentUser == null) {
+            showError("Usuario no autenticado.");
+            return;
+        }
+
+        Task<List<User>> task = new Task<>() {
+            @Override
+            protected List<User> call() throws Exception {
+                return userService.getAvailableUsers(currentUser.getId());
+            }
+        };
+
+        task.setOnSucceeded(event -> {
+            List<User> users = task.getValue();
+            currentUsers.clear();
+            currentUsers.addAll(users);
+            updateUserResults();
+            setStatus(users.isEmpty()
+                    ? "No hay usuarios disponibles."
+                    : users.size() + " usuario(s) disponible(s).");
+        });
+
+        task.setOnFailed(event -> {
+            showError("Error al cargar usuarios.");
+            event.getSource().getException().printStackTrace();
+        });
+
+        TaskManager.getExecutor().submit(task);
     }
 
     @FXML
@@ -74,23 +117,33 @@ public class SearchController {
                 : "";
 
         if (keyword.isEmpty()) {
-            clearResults();
-            setStatus("Ingresa un nombre o correo.");
+            loadAllUsers();
             return;
         }
 
-        try {
-            List<User> users = userService.searchUsers(keyword, currentUser.getId());
+        Task<List<User>> task = new Task<>() {
+            @Override
+            protected List<User> call() throws Exception {
+                return userService.searchUsers(keyword, currentUser.getId());
+            }
+        };
+
+        task.setOnSucceeded(event -> {
+            List<User> users = task.getValue();
             currentUsers.clear();
             currentUsers.addAll(users);
             updateUserResults();
             setStatus(users.isEmpty()
                     ? "No se encontraron usuarios."
                     : users.size() + " usuario(s) encontrado(s).");
-        } catch (Exception e) {
+        });
+
+        task.setOnFailed(event -> {
             showError("Error al buscar usuarios.");
-            e.printStackTrace();
-        }
+            event.getSource().getException().printStackTrace();
+        });
+
+        TaskManager.getExecutor().submit(task);
     }
 
     @FXML
@@ -169,8 +222,15 @@ public class SearchController {
         userResults.clear();
 
         for (User user : currentUsers) {
-            userResults.add(user.getName() + " <" + user.getEmail() + ">");
+            String statusIndicator = user.isConnected() ? "● " : "○ ";
+            String statusText = user.isConnected() ? "En línea" : "Desconectado";
+            userResults.add(statusIndicator + user.getName() + " (" + user.getEmail() + ") - " + statusText);
         }
+    }
+
+    private void refreshUserStatus() {
+        // Actualizar indicadores de estado sin recargar la lista completa
+        updateUserResults();
     }
 
     private void setStatus(String message) {

@@ -53,7 +53,7 @@
 
                 <Separator opacity="0.35" />
 
-                <Label fx:id="lblStatus" styleClass="muted-label" text="Busca por nombre o correo." />
+                <Label fx:id="lblStatus" styleClass="muted-label" text="Cargando usuarios..." />
 
                 <ListView fx:id="userList" prefHeight="280.0" styleClass="plain-list">
                     <VBox.vgrow>
